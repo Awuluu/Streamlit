@@ -31,7 +31,48 @@ st.line_chart(sales_by_month, y="Sales")
 
 st.write("## Your additions")
 st.write("### (1) add a drop down for Category (https://docs.streamlit.io/library/api-reference/widgets/st.selectbox)")
+selected_category = st.selectbox(
+    'Select a Category:',
+    options=df['Category'].unique()
+)
 st.write("### (2) add a multi-select for Sub_Category *in the selected Category (1)* (https://docs.streamlit.io/library/api-reference/widgets/st.multiselect)")
+sub_category_options = df[df['Category'] == selected_category]['Sub_Category'].unique()
+selected_subcategories = st.multiselect(
+    'Select Sub-Categories:',
+    options=sub_category_options
+)
+
+# Filter data based on selections
+filtered_data = df[(df['Category'] == selected_category) & (df['Sub_Category'].isin(selected_subcategories))]
+
 st.write("### (3) show a line chart of sales for the selected items in (2)")
+if not filtered_data.empty:
+    st.line_chart(filtered_data.resample('ME')['Sales'].sum())
+else:
+    st.write("No data available for the selected filters.")
+
 st.write("### (4) show three metrics (https://docs.streamlit.io/library/api-reference/data/st.metric) for the selected items in (2): total sales, total profit, and overall profit margin (%)")
+
 st.write("### (5) use the delta option in the overall profit margin metric to show the difference between the overall average profit margin (all products across all categories)")
+if not filtered_data.empty:
+    total_sales = filtered_data['Sales'].sum()
+    total_profit = filtered_data['Profit'].sum()
+    if total_sales > 0:
+        profit_margin = (total_profit / total_sales) * 100
+    else:
+        profit_margin = 0
+
+    # Overall metrics for comparison
+    overall_total_sales = df['Sales'].sum()
+    overall_total_profit = df['Profit'].sum()
+    overall_profit_margin = (overall_total_profit / overall_total_sales) * 100 if overall_total_sales > 0 else 0
+
+    st.metric("Total Sales", f"${total_sales:,.2f}")
+    st.metric("Total Profit", f"${total_profit:,.2f}")
+    st.metric(
+        "Profit Margin",
+        f"{profit_margin:.2f}%",
+        delta=f"{profit_margin - overall_profit_margin:.2f}%"
+    )
+else:
+    st.write("No data available for the selected filters to calculate metrics.")
