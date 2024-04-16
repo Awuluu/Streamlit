@@ -74,5 +74,5 @@ if not filtered_data.empty:
         delta=f"{profit_margin - overall_profit_margin:.2f}%"
     )
 else:
-    st.write("No data available for the selected filters to calculate metrics.")
+    #No data available for the selected filters to calculate metrics.")
     
